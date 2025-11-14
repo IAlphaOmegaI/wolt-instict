@@ -1,0 +1,17 @@
+{
+  "extends": ["@zenncore/mobile/ts-config", "expo/tsconfig.base"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src",
+    "scripts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts",
+    "*.ts",
+    "*.js",
+    ".expo/types/**/*.ts"
+  ]
+}

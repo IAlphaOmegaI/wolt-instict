@@ -1,0 +1,21 @@
+{
+  "name": "@zenncore/tsdown-config",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@zenncore/ts-config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./src/config.ts",
+    "./options": "./src/options/index.ts"
+  }
+}

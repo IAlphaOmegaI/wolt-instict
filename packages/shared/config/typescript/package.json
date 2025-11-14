@@ -1,0 +1,9 @@
+{
+  "name": "@zenncore/ts-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/config.json",
+    "./lib": "./src/lib.config.json"
+  }
+}

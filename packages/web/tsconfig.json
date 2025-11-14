@@ -1,0 +1,7 @@
+{
+  "extends": "@zenncore/ts-config/lib",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.iterable"]
+  },
+  "include": ["src"]
+}

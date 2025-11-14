@@ -1,0 +1,8 @@
+/* @import "tailwindcss";
+@import "nativewind/theme"; */
+/* @import "@zenncore/tailwind-config";
+/* @import "@zenncore/mobile/tailwind-config"; */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

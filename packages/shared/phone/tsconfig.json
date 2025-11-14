@@ -1,0 +1,4 @@
+{
+  "extends": "@zenncore/ts-config/lib",
+  "include": ["src"]
+}

@@ -1,0 +1,60 @@
+{
+  "name": "@zenncore/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "outdated": "bun expo install --check",
+    "clean": "rm -rf .turbo dist node_modules"
+  },
+  "dependencies": {
+    "@expo/metro-config": "^54.0.9",
+    "@zenncore/icons": "workspace:*",
+    "@zenncore/utils": "workspace:*",
+    "expo-image": "~3.0.10",
+    "metro-cache": "^0.83.3"
+  },
+  "peerDependencies": {
+    "expo": "~54.0.23",
+    "nativewind": "^4.2.1",
+    "react-native-css": "^3.0.1",
+    "react-native-reanimated": "~4.1.1",
+    "react": "19.1.0",
+    "react-hook-form": "catalog:",
+    "react-native": "0.81.5"
+  },
+  "devDependencies": {
+    "@babel/generator": "^8.0.0-beta.3",
+    "@babel/parser": "^8.0.0-beta.3",
+    "@babel/traverse": "^8.0.0-beta.3",
+    "@babel/types": "^8.0.0-beta.3",
+    "@types/node": "catalog:",
+    "@types/react": "~19.1.10",
+    "@zenncore/tailwind-config": "workspace:*",
+    "@zenncore/tsdown-config": "workspace:*",
+    "@zenncore/ts-config": "workspace:*",
+    "tailwindcss": "^3.4.17",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    "./components/*": {
+      "types": "./dist/components/*/index.d.ts",
+      "import": "./dist/components/*/index.js"
+    },
+    "./*": {
+      "types": "./dist/*/index.d.ts",
+      "import": "./dist/*/index.js"
+    },
+    "./metro-config": {
+      "types": "./dist/config/metro/index.d.ts",
+      "import": "./dist/config/metro/index.js",
+      "require": "./dist/config/metro/index.cjs"
+    },
+    "./ts-config": "./src/config/typescript/config.json"
+  }
+}
