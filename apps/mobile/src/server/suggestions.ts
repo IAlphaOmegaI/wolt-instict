@@ -3,7 +3,7 @@ import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import type {
   MealRecommendationParams,
-  MealRecommendationResponse,
+  AISuggestion,
 } from "@/types/meal-recommendation";
 
 const SYSTEM_PROMPT = `You are "Wolt Instinct," a hyper-intelligent, proactive AI assistant integrated into the Wolt app.
@@ -27,9 +27,9 @@ When prompted with a user's current context vector, you must follow this thought
 4. **Consider Alternatives:** Prepare a strong secondary option in case the user wants to "shuffle." The alternative should be logically different but still relevant to the context (e.g., a salad instead of sushi for a healthy lunch).
 5. **Craft the Message:** Compose the notification copy and the UI card text. It must be concise, personalized, and actionable.`;
 
-export async function getMealRecommendation(
+export async function getSuggestions(
   params: MealRecommendationParams,
-): Promise<MealRecommendationResponse> {
+): Promise<AISuggestion> {
   // Validate required fields
   if (!params.userId || !params.dayOfWeek || !params.timeOfDay) {
     throw new Error("Missing required fields: userId, dayOfWeek, timeOfDay");
@@ -48,91 +48,89 @@ You MUST respond with ONLY a complete, valid JSON object. No markdown, no code b
 
 EXACT JSON FORMAT REQUIRED (copy this structure exactly):
 {
-  "suggestionType": "proactiveMeal",
-  "confidence": 0.92,
-  "primarySuggestion": {
-    "restaurantId": "r789",
-    "restaurantName": "The Health Hub",
-    "items": [
+  "background": "#FF6B6B",
+  "group": {
+    "friends": [
       {
-        "itemId": "i552",
-        "itemName": "Chicken & Quinoa Protein Bowl",
-        "quantity": 1
+        "name": "Alex",
+        "avatar": "https://example.com/avatar1.jpg"
+      },
+      {
+        "name": "Sam",
+        "avatar": "https://example.com/avatar2.jpg"
       }
-    ],
-    "totalPrice": 16.20,
-    "justification": "Perfect to refuel after your workout."
+    ]
   },
-  "alternativeSuggestion": {
-    "restaurantId": "r456",
-    "restaurantName": "Sushi Place",
-    "items": [
-      {
-        "itemId": "i901",
-        "itemName": "Salmon Sashimi Platter",
-        "quantity": 1
-      }
-    ],
-    "totalPrice": 18.50,
-    "justification": "Another great high-protein option."
-  }
+  "title": "Perfect post-workout refuel",
+  "items": [
+    {
+      "image": "https://example.com/chicken-bowl.jpg",
+      "description": "Chicken & Quinoa Protein Bowl with fresh vegetables",
+      "price": 16.20
+    }
+  ],
+  "icon": "salad",
+  "time": 1800
 }
 
-IMPORTANT: Notice that primarySuggestion and alternativeSuggestion are OBJECTS (surrounded by curly braces {}) containing multiple key-value pairs. They are NOT strings or arrays.
+IMPORTANT NOTES:
+- "background" must be a valid color string (hex code like "#FF6B6B" or color name like "blue")
+- "group" is OPTIONAL - only include it if this is a group order (calendarEventParticipants > 1)
+- "title" should be a short, personalized message explaining why this suggestion is relevant
+- "items" is an array of food items, each with image URL, description, and price
+- "icon" must be one of: "football&popcorn", "sushi", "burger", "salad", or "dessert"
+- "time" is the estimated delivery time in seconds (typically 1200-3600 seconds, i.e., 20-60 minutes)
 
 Your response must be valid JSON that can be parsed by JSON.parse(). Every opening brace { must have a closing brace }, every opening bracket [ must have a closing bracket ].
 
 Now analyze the context vector and return ONLY the JSON object following this exact structure.`;
 
   // Define Zod schema for structured output
-  const suggestionItemSchema = z.object({
-    itemId: z.string().describe("A unique identifier for the item, like 'i552' or 'i123'"),
-    itemName: z.string().describe("The full name of the dish or item, like 'Chicken & Quinoa Protein Bowl'"),
-    quantity: z.number().int().positive().describe("The number of items to order, typically 1"),
+  const friendSchema = z.object({
+    name: z.string().describe("Friend's name"),
+    avatar: z.string().url().describe("URL to friend's avatar image"),
   });
 
-  const suggestionSchema = z.object({
-    restaurantId: z.string().describe("A unique identifier for the restaurant, like 'r789' or 'r123'"),
-    restaurantName: z.string().describe("The full name of the restaurant, like 'The Health Hub' or 'Sushi Place'"),
-    items: z
-      .array(suggestionItemSchema)
+  const groupSchema = z.object({
+    friends: z
+      .array(friendSchema)
       .min(1)
-      .describe("An array of items to order from this restaurant. Must contain at least one item object with itemId, itemName, and quantity fields."),
-    totalPrice: z
-      .number()
-      .positive()
-      .describe("The total price for all items in local currency, as a number like 16.20 or 18.50"),
-    justification: z
-      .string()
-      .describe("A brief, personalized explanation for why this suggestion is relevant, like 'Perfect to refuel after your workout' or 'Based on your Tuesday usual'"),
+      .describe("Array of friends participating in the group order"),
+  });
+
+  const itemSchema = z.object({
+    image: z.string().url().describe("URL to the food item image"),
+    description: z.string().describe("Description of the food item, e.g., 'Chicken & Quinoa Protein Bowl with fresh vegetables'"),
+    price: z.number().positive().describe("Price of the item in local currency, e.g., 16.20"),
   });
 
   const responseSchema = z.object({
-    suggestionType: z
-      .enum(["proactiveMeal", "proactiveGroceries", "groupOrder"])
-      .describe("The type of suggestion: 'proactiveMeal' for restaurant meals, 'proactiveGroceries' for grocery orders, or 'groupOrder' for group events"),
-    confidence: z
+    background: z
+      .string()
+      .describe("Background color as hex code (e.g., '#FF6B6B') or color name (e.g., 'blue')"),
+    group: groupSchema
+      .optional()
+      .describe("Optional group information - only include if this is a group order (calendarEventParticipants > 1)"),
+    title: z
+      .string()
+      .describe("Short, personalized title explaining why this suggestion is relevant, e.g., 'Perfect post-workout refuel' or 'Based on your Tuesday usual'"),
+    items: z
+      .array(itemSchema)
+      .min(1)
+      .describe("Array of food items to order, each with image URL, description, and price"),
+    icon: z
+      .enum(["football&popcorn", "sushi", "burger", "salad", "dessert"])
+      .describe("Icon type matching the food category: 'football&popcorn' for snacks/events, 'sushi' for Japanese, 'burger' for fast food, 'salad' for healthy options, 'dessert' for sweets"),
+    time: z
       .number()
-      .min(0)
-      .max(1)
-      .describe("Confidence score between 0 and 1, typically 0.85 to 0.95 for high confidence suggestions"),
-    primarySuggestion: suggestionSchema.describe(
-      "The primary recommendation as a complete object with restaurantId, restaurantName, items array, totalPrice, and justification",
-    ),
-    alternativeSuggestion: suggestionSchema.describe(
-      "An alternative recommendation as a complete object with restaurantId, restaurantName, items array, totalPrice, and justification",
-    ),
+      .int()
+      .positive()
+      .describe("Estimated delivery time in seconds (typically 1200-3600, i.e., 20-60 minutes)"),
   });
 
   try {
-    // Sync API keys - AI SDK checks GOOGLE_GENERATIVE_AI_API_KEY but we use GEMINI_API_KEY
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error("Gemini API key not configured. Set GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY environment variable.");
-    }
-    
     const googleAI = createGoogleGenerativeAI({
-      apiKey,
+      apiKey: process.env.GEMINI_API_KEY,
     });
 
     try {
@@ -144,10 +142,10 @@ Now analyze the context vector and return ONLY the JSON object following this ex
         maxTokens: 4000,
       });
 
-      // Validate that nested objects are not null
-      const validated = object as MealRecommendationResponse;
-      if (!validated.primarySuggestion || !validated.alternativeSuggestion) {
-        throw new Error("Generated object has null nested suggestions");
+      // Validate the response
+      const validated = object as AISuggestion;
+      if (!validated.items || validated.items.length === 0) {
+        throw new Error("Generated object has no items");
       }
 
       return validated;
@@ -184,7 +182,10 @@ Now analyze the context vector and return ONLY the JSON object following this ex
       }
 
       // Validate with Zod schema
-      const validated = responseSchema.parse(parsedResponse);
+      const validated = responseSchema.parse(parsedResponse) as AISuggestion;
+      if (!validated.items || validated.items.length === 0) {
+        throw new Error("Generated object has no items");
+      }
       return validated;
     }
   } catch (error) {

@@ -1,124 +1,137 @@
-import { NextRequest, NextResponse } from "next/server";
-import type { MealRecommendationParams, MealRecommendationResponse } from "@/types/meal-recommendation";
+import { type NextRequest, NextResponse } from "next/server";
+import type {
+  MealRecommendationParams,
+  MealRecommendationResponse,
+} from "@/types/meal-recommendation";
 
 export async function POST(request: NextRequest) {
-	try {
-		const params: MealRecommendationParams = await request.json();
+  try {
+    const params: MealRecommendationParams = await request.json();
 
-		// Validate required fields
-		if (!params.userId || !params.dayOfWeek || !params.timeOfDay) {
-			return NextResponse.json(
-				{ error: "Missing required fields: userId, dayOfWeek, timeOfDay" },
-				{ status: 400 },
-			);
-		}
+    // Validate required fields
+    if (!params.userId || !params.dayOfWeek || !params.timeOfDay) {
+      return NextResponse.json(
+        { error: "Missing required fields: userId, dayOfWeek, timeOfDay" },
+        { status: 400 },
+      );
+    }
 
-		const apiKey = process.env.GEMINI_API_KEY;
-		if (!apiKey) {
-			return NextResponse.json(
-				{ error: "Gemini API key not configured" },
-				{ status: 500 },
-			);
-		}
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "Gemini API key not configured" },
+        { status: 500 },
+      );
+    }
 
-		// Build the prompt for Gemini
-		const prompt = buildRecommendationPrompt(params);
+    // Build the prompt for Gemini
+    const prompt = buildRecommendationPrompt(params);
 
-		// Call Gemini API
-		const geminiResponse = await fetch(
-			`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					contents: [
-						{
-							parts: [
-								{
-									text: prompt,
-								},
-							],
-						},
-					],
-				}),
-			},
-		);
+    // Call Gemini API
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+        }),
+      },
+    );
 
-		if (!geminiResponse.ok) {
-			const errorData = await geminiResponse.text();
-			console.error("Gemini API error:", errorData);
-			return NextResponse.json(
-				{ error: "Failed to get recommendation from Gemini API" },
-				{ status: 500 },
-			);
-		}
+    if (!geminiResponse.ok) {
+      const errorData = await geminiResponse.text();
+      console.error("Gemini API error:", errorData);
+      return NextResponse.json(
+        { error: "Failed to get recommendation from Gemini API" },
+        { status: 500 },
+      );
+    }
 
-		const data = await geminiResponse.json();
-		const recommendationText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const data = await geminiResponse.json();
+    const recommendationText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-		if (!recommendationText) {
-			return NextResponse.json(
-				{ error: "No recommendation received from Gemini" },
-				{ status: 500 },
-			);
-		}
+    if (!recommendationText) {
+      return NextResponse.json(
+        { error: "No recommendation received from Gemini" },
+        { status: 500 },
+      );
+    }
 
-		// Parse the response (Gemini returns text, so we'll parse it)
-		try {
-			const recommendation = parseGeminiResponse(recommendationText);
-			return NextResponse.json<MealRecommendationResponse>(recommendation);
-		} catch (parseError) {
-			console.error("Parse error:", parseError);
-			return NextResponse.json(
-				{ error: "Failed to parse AI response. Please try again." },
-				{ status: 500 },
-			);
-		}
-	} catch (error) {
-		console.error("Error in meal recommendation API:", error);
-		return NextResponse.json(
-			{ error: "Internal server error" },
-			{ status: 500 },
-		);
-	}
+    // Parse the response (Gemini returns text, so we'll parse it)
+    try {
+      const recommendation = parseGeminiResponse(recommendationText);
+      return NextResponse.json<MealRecommendationResponse>(recommendation);
+    } catch (parseError) {
+      console.error("Parse error:", parseError);
+      return NextResponse.json(
+        { error: "Failed to parse AI response. Please try again." },
+        { status: 500 },
+      );
+    }
+  } catch (error) {
+    console.error("Error in meal recommendation API:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 }
 
 function buildRecommendationPrompt(params: MealRecommendationParams): string {
-	const context = [];
-	
-	// Core context
-	context.push(`userId: ${params.userId}`);
-	context.push(`dayOfWeek: ${params.dayOfWeek}`);
-	context.push(`timeOfDay: ${params.timeOfDay}`);
-	context.push(`atWork: ${params.atWork ? 1 : 0}`);
-	context.push(`atHome: ${params.atHome ? 1 : 0}`);
-	context.push(`wasTraining: ${params.wasTraining ? 1 : 0}`);
-	context.push(`temperature: ${params.temperature}`);
-	context.push(`rain: ${params.rain ? 1 : 0}`);
-	context.push(`season: ${params.season}`);
-	context.push(`paydayDistance: ${params.paydayDistance}`);
-	context.push(`holiday: ${params.holiday ? 1 : 0}`);
-	
-	// Optional fields
-	if (params.itemId) context.push(`itemId: ${params.itemId}`);
-	if (params.price !== undefined) context.push(`price: ${params.price}`);
-	if (params.category) context.push(`category: ${params.category}`);
-	if (params.brand) context.push(`brand: ${params.brand}`);
-	if (params.pastBuys !== undefined) context.push(`pastBuys: ${params.pastBuys}`);
-	if (params.pastRecency !== undefined) context.push(`pastRecency: ${params.pastRecency}`);
-	if (params.avgGap !== undefined) context.push(`avgGap: ${params.avgGap}`);
-	if (params.avgQuantity !== undefined) context.push(`avgQuantity: ${params.avgQuantity}`);
-	if (params.isRecurring) context.push(`isRecurring: 1`);
-	if (params.itemPopularity !== undefined) context.push(`itemPopularity: ${params.itemPopularity}`);
-	if (params.healthActivityType) context.push(`healthActivityType: ${params.healthActivityType}`);
-	if (params.healthActivityDuration !== undefined) context.push(`healthActivityDuration: ${params.healthActivityDuration}`);
-	if (params.healthGoal) context.push(`healthGoal: ${params.healthGoal}`);
-	if (params.calendarEventType) context.push(`calendarEventType: ${params.calendarEventType}`);
-	if (params.calendarEventParticipants !== undefined) context.push(`calendarEventParticipants: ${params.calendarEventParticipants}`);
+  const context = [];
 
-	return `You are "Wolt Instinct," a hyper-intelligent, proactive AI assistant integrated into the Wolt app.
+  // Core context
+  context.push(`userId: ${params.userId}`);
+  context.push(`dayOfWeek: ${params.dayOfWeek}`);
+  context.push(`timeOfDay: ${params.timeOfDay}`);
+  context.push(`atWork: ${params.atWork ? 1 : 0}`);
+  context.push(`atHome: ${params.atHome ? 1 : 0}`);
+  context.push(`wasTraining: ${params.wasTraining ? 1 : 0}`);
+  context.push(`temperature: ${params.temperature}`);
+  context.push(`rain: ${params.rain ? 1 : 0}`);
+  context.push(`season: ${params.season}`);
+  context.push(`paydayDistance: ${params.paydayDistance}`);
+  context.push(`holiday: ${params.holiday ? 1 : 0}`);
+
+  // Optional fields
+  if (params.itemId) context.push(`itemId: ${params.itemId}`);
+  if (params.price !== undefined) context.push(`price: ${params.price}`);
+  if (params.category) context.push(`category: ${params.category}`);
+  if (params.brand) context.push(`brand: ${params.brand}`);
+  if (params.pastBuys !== undefined)
+    context.push(`pastBuys: ${params.pastBuys}`);
+  if (params.pastRecency !== undefined)
+    context.push(`pastRecency: ${params.pastRecency}`);
+  if (params.avgGap !== undefined) context.push(`avgGap: ${params.avgGap}`);
+  if (params.avgQuantity !== undefined)
+    context.push(`avgQuantity: ${params.avgQuantity}`);
+  if (params.isRecurring) context.push("isRecurring: 1");
+  if (params.itemPopularity !== undefined)
+    context.push(`itemPopularity: ${params.itemPopularity}`);
+  if (params.healthActivityType)
+    context.push(`healthActivityType: ${params.healthActivityType}`);
+  if (params.healthActivityDuration !== undefined)
+    context.push(`healthActivityDuration: ${params.healthActivityDuration}`);
+  if (params.healthGoal) context.push(`healthGoal: ${params.healthGoal}`);
+  if (params.calendarEventType)
+    context.push(`calendarEventType: ${params.calendarEventType}`);
+  if (params.calendarEventParticipants !== undefined)
+    context.push(
+      `calendarEventParticipants: ${params.calendarEventParticipants}`,
+    );
+
+  return `You are "Wolt Instinct," a hyper-intelligent, proactive AI assistant integrated into the Wolt app.
 
 ## Core Mission
 Your mission is to understand each user's life patterns, routines, and immediate context to predict their needs *before they do*. Your goal is to reduce the cognitive load of ordering to a single tap by proactively sending highly relevant, timely, and personalized suggestions. Success is a user feeling that Wolt "just gets them."
@@ -190,66 +203,71 @@ Now, analyze the context vector above and provide your recommendation. Respond O
 }
 
 function parseGeminiResponse(text: string): MealRecommendationResponse {
-	try {
-		// Try to extract JSON from the response (Gemini sometimes adds markdown formatting)
-		// Remove markdown code blocks if present
-		let cleanedText = text.trim();
-		cleanedText = cleanedText.replace(/^```json\s*/i, "");
-		cleanedText = cleanedText.replace(/^```\s*/i, "");
-		cleanedText = cleanedText.replace(/\s*```$/i, "");
-		cleanedText = cleanedText.trim();
-		
-		// Try to find JSON object
-		const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-		if (jsonMatch) {
-			const parsed = JSON.parse(jsonMatch[0]);
-			
-			// Convert snake_case to camelCase if needed (for backward compatibility)
-			const normalized = normalizeResponse(parsed);
-			
-			// Validate the response structure
-			if (
-				normalized.suggestionType &&
-				typeof normalized.confidence === "number" &&
-				normalized.primarySuggestion &&
-				normalized.alternativeSuggestion
-			) {
-				return normalized as MealRecommendationResponse;
-			}
-		}
-		
-		throw new Error("Invalid response structure");
-	} catch (error) {
-		console.error("Failed to parse Gemini response:", error);
-		console.error("Response text:", text);
-		
-		// Fallback: return a structured error response
-		throw new Error("Failed to parse recommendation response from AI");
-	}
+  try {
+    // Try to extract JSON from the response (Gemini sometimes adds markdown formatting)
+    // Remove markdown code blocks if present
+    let cleanedText = text.trim();
+    cleanedText = cleanedText.replace(/^```json\s*/i, "");
+    cleanedText = cleanedText.replace(/^```\s*/i, "");
+    cleanedText = cleanedText.replace(/\s*```$/i, "");
+    cleanedText = cleanedText.trim();
+
+    // Try to find JSON object
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      // Convert snake_case to camelCase if needed (for backward compatibility)
+      const normalized = normalizeResponse(parsed);
+
+      // Validate the response structure
+      if (
+        normalized.suggestionType &&
+        typeof normalized.confidence === "number" &&
+        normalized.primarySuggestion &&
+        normalized.alternativeSuggestion
+      ) {
+        return normalized as MealRecommendationResponse;
+      }
+    }
+
+    throw new Error("Invalid response structure");
+  } catch (error) {
+    console.error("Failed to parse Gemini response:", error);
+    console.error("Response text:", text);
+
+    // Fallback: return a structured error response
+    throw new Error("Failed to parse recommendation response from AI");
+  }
 }
 
 function normalizeResponse(parsed: any): MealRecommendationResponse {
-	// Convert snake_case to camelCase if needed
-	return {
-		suggestionType: parsed.suggestionType || parsed.suggestion_type || "proactiveMeal",
-		confidence: parsed.confidence || 0.85,
-		primarySuggestion: normalizeSuggestion(parsed.primarySuggestion || parsed.primary_suggestion),
-		alternativeSuggestion: normalizeSuggestion(parsed.alternativeSuggestion || parsed.alternative_suggestion),
-	};
+  // Convert snake_case to camelCase if needed
+  return {
+    suggestionType:
+      parsed.suggestionType || parsed.suggestion_type || "proactiveMeal",
+    confidence: parsed.confidence || 0.85,
+    primarySuggestion: normalizeSuggestion(
+      parsed.primarySuggestion || parsed.primary_suggestion,
+    ),
+    alternativeSuggestion: normalizeSuggestion(
+      parsed.alternativeSuggestion || parsed.alternative_suggestion,
+    ),
+  };
 }
 
 function normalizeSuggestion(suggestion: any) {
-	if (!suggestion) throw new Error("Missing suggestion");
-	return {
-		restaurantId: suggestion.restaurantId || suggestion.restaurant_id || "",
-		restaurantName: suggestion.restaurantName || suggestion.restaurant_name || "",
-		items: (suggestion.items || []).map((item: any) => ({
-			itemId: item.itemId || item.item_id || "",
-			itemName: item.itemName || item.item_name || "",
-			quantity: item.quantity || 1,
-		})),
-		totalPrice: suggestion.totalPrice || suggestion.total_price || 0,
-		justification: suggestion.justification || "",
-	};
+  if (!suggestion) throw new Error("Missing suggestion");
+  return {
+    restaurantId: suggestion.restaurantId || suggestion.restaurant_id || "",
+    restaurantName:
+      suggestion.restaurantName || suggestion.restaurant_name || "",
+    items: (suggestion.items || []).map((item: any) => ({
+      itemId: item.itemId || item.item_id || "",
+      itemName: item.itemName || item.item_name || "",
+      quantity: item.quantity || 1,
+    })),
+    totalPrice: suggestion.totalPrice || suggestion.total_price || 0,
+    justification: suggestion.justification || "",
+  };
 }
-

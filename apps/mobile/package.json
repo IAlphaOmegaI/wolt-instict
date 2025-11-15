@@ -10,6 +10,8 @@
     "android": "APP_VARIANT=development expo run:android",
     "ios": "APP_VARIANT=development expo run:ios",
     "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "test:gemini": "bun src/server/test-gemini.ts",
     "outdated": "bun expo install --check",
     "clean": "rm -rf .turbo .expo ios android node_modules",
     "preinstall": "bun scripts/postinstall.ts"
