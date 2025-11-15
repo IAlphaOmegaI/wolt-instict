@@ -23,8 +23,8 @@ export const clean = (json: string) => {
  * Analyze user context to inform food recommendations
  */
 export const analyze = async (
-  contextVector: string,
-  eventsContext = ""
+  vector: string,
+  events = ""
 ): Promise<z.infer<typeof $Context>> => {
   const model = Model.get();
 
@@ -33,8 +33,9 @@ export const analyze = async (
   const prompt = `
       ${system}
       ## Current User Context Vector
-      ${contextVector}
-      ${eventsContext}
+      ${vector}
+      ## Relevant Events
+      ${events}
       
       Analyze this context and provide a structured analysis of the user's situation, key factors, and dietary needs. Consider any relevant events when determining the situation and meal type.
       
