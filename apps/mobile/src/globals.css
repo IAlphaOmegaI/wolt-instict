@@ -12,8 +12,8 @@
 
     /* foreground shades - white and gray text */
     --foreground-dimmed: #717275;
-    --foreground: #ffffff;
-    --foreground-rich: #f9fafb;
+    --foreground: #f9fafb;
+    --foreground-rich: #ffffff;
 
     /* emphasis shades - white text for primary content */
     --emphasis-dimmed: #9ca3af;
@@ -29,8 +29,8 @@
 
     /* primary shades - blue */
     --primary-dimmed: #021533;
-    --primary: #0c2c5d;
-    --primary-rich: #134694;
+    --primary: #009de0;
+    --primary-rich: #1a4351;
 
     /* secondary shades - teal green matching the design */
     --secondary-dimmed: #0d9488;

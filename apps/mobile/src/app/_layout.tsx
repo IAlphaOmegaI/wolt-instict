@@ -1,18 +1,21 @@
 import { Stack } from "expo-router";
 import "expo-dev-client";
 import "../globals.css";
-import { Image } from "@zenncore/mobile/components/image";
+import { View } from "react-native";
 import { NavigationBar } from "@/components/navigation-bar";
 
 export default () => {
   return (
-    <>
-      <Image
-        src={require("@/assets/images/banner.png")}
-        className="w-screen h-auto"
+    <View className="flex-1 bg-background">
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: "#141414",
+          },
+        }}
       />
-      <Stack screenOptions={{ headerShown: false }} />
       <NavigationBar />
-    </>
+    </View>
   );
 };

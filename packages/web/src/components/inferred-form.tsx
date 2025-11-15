@@ -100,12 +100,12 @@ export type { CreateCustomField, FormEntries, GenericForm, InferredSchema };
 export type InferredFieldConfig<
   Shape extends GenericShape,
   Validator extends InferredValidator<Shape>,
-  Props extends InferredProps<Shape, Validator>
+  Props extends InferredProps<Shape, Validator>,
 > = InferredFieldConfigPrimitive<Interface, Shape, Validator, Props>;
 
 export type InferredProps<
   Shape extends GenericShape,
-  Validator extends InferredValidator<Shape>
+  Validator extends InferredValidator<Shape>,
 > = InferredPropsPrimitive<Interface, Shape, Validator>;
 
 export type InferredFormOptions<Schema extends GenericSchema> =
@@ -113,7 +113,7 @@ export type InferredFormOptions<Schema extends GenericSchema> =
 
 export const applyFormOptions = <Schema extends GenericSchema>(
   schema: Schema,
-  options: InferredFormOptions<Schema>
+  options: InferredFormOptions<Schema>,
 ): FormFromOptions<Interface, Schema, InferredFormOptions<Schema>> => {
   return applyFormOptionsPrimitive<Interface, Schema>(schema, options);
 };
@@ -135,7 +135,7 @@ export type InferredFormFieldProps<Field extends SomeField> = {
 
 export const InferredFormField = <Field extends SomeField>(
   // @ts-expect-error: it is working fine
-  props: InferredFormFieldProps<Field>
+  props: InferredFormFieldProps<Field>,
 ): ReactNode => {
   const { className } = props;
   return (
@@ -162,7 +162,7 @@ export const InferredFormField = <Field extends SomeField>(
                   {...props}
                   className={cn(
                     "border border-accent-foreground group-data-invalid:border-error group-data-invalid:placeholder:text-error",
-                    className
+                    className,
                   )}
                 >
                   <TextFieldInput />
@@ -186,9 +186,9 @@ export const InferredFormField = <Field extends SomeField>(
                   ? reduceValidator(
                       (
                         reduceValidator(
-                          props.validator
+                          props.validator,
                         ) as z.ZodArray<z.ZodEnum>
-                      ).element
+                      ).element,
                     ) instanceof z.ZodEnum
                   : reduceValidator(props.validator) instanceof z.ZodEnum;
 
@@ -197,9 +197,9 @@ export const InferredFormField = <Field extends SomeField>(
                     ? reduceValidator(
                         (
                           reduceValidator(
-                            props.validator
+                            props.validator,
                           ) as z.ZodArray<z.ZodEnum>
-                        ).element
+                        ).element,
                       ).options
                     : reduceValidator(props.validator as z.ZodEnum).options;
 
@@ -207,12 +207,12 @@ export const InferredFormField = <Field extends SomeField>(
                   ? Array.from(
                       reduceValidator(
                         reduceValidator(
-                          props.validator
-                        ) as z.ZodArray<z.ZodLiteral>
-                      ).element.values
+                          props.validator,
+                        ) as z.ZodArray<z.ZodLiteral>,
+                      ).element.values,
                     )
                   : Array.from(
-                      reduceValidator(props.validator as z.ZodLiteral).values
+                      reduceValidator(props.validator as z.ZodLiteral).values,
                     );
               })();
 
@@ -222,7 +222,7 @@ export const InferredFormField = <Field extends SomeField>(
               }));
 
               const normalizeItems = (
-                items: Select.Props<unknown>["items"]
+                items: Select.Props<unknown>["items"],
               ) => {
                 return items
                   ? Array.isArray(items)
@@ -255,8 +255,8 @@ export const InferredFormField = <Field extends SomeField>(
                               ?.map(
                                 (value: string) =>
                                   options.find(
-                                    (option) => option.value === value
-                                  )?.label
+                                    (option) => option.value === value,
+                                  )?.label,
                               )
                               .join(", ")
                           : options.find((option) => option.value === value)
@@ -310,7 +310,7 @@ export const InferredFormField = <Field extends SomeField>(
             <FieldLabel
               className={cn(
                 "font-semibold data-invalid:text-error",
-                props.classList?.label
+                props.classList?.label,
               )}
             >
               {props.label ?? props.name}
@@ -320,7 +320,7 @@ export const InferredFormField = <Field extends SomeField>(
             <FieldDescription
               className={cn(
                 "text-foreground-dimmed",
-                props.classList?.description
+                props.classList?.description,
               )}
             >
               {props.description}
@@ -334,7 +334,7 @@ export const InferredFormField = <Field extends SomeField>(
 
 export const InferredForm = <
   Form extends GenericForm,
-  Schema extends InferredSchema<Form> = InferredSchema<Form>
+  Schema extends InferredSchema<Form> = InferredSchema<Form>,
 >({
   children,
   config,
@@ -374,18 +374,18 @@ export const InferredForm = <
 export namespace InferredForm {
   export type Props<
     Form extends GenericForm,
-    Schema extends InferredSchema<Form> = InferredSchema<Form>
+    Schema extends InferredSchema<Form> = InferredSchema<Form>,
   > = UseInferredFormParams<Form, Schema> & {
     children?: ReactNode;
     className?: string;
     onSubmit?: (data: FormEntries<Form>) => void;
     onBlur?: (
       event: FocusEvent<HTMLFormElement, Element>,
-      form: UseFormReturn<FormEntries<Form>>
+      form: UseFormReturn<FormEntries<Form>>,
     ) => void;
     onChange?: (
       data: FormEntries<Form>,
-      form: UseFormReturn<FormEntries<Form>>
+      form: UseFormReturn<FormEntries<Form>>,
     ) => void;
   };
 }
@@ -396,9 +396,9 @@ export type InferredValidator<Shape extends GenericShape> =
 export const field = <
   Shape extends GenericShape,
   Validator extends InferredValidator<Shape>,
-  Props extends InferredProps<Shape, Validator>
+  Props extends InferredProps<Shape, Validator>,
 >(
-  config: InferredFieldConfig<Shape, Validator, Props>
+  config: InferredFieldConfig<Shape, Validator, Props>,
 ): InferredFieldConfig<Shape, Validator, Props> => {
   return fieldPrimitive<Interface, Shape, Validator, Props>(config);
 };

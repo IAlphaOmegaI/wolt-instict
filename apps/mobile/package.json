@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "outdated": "bun expo install --check",
     "clean": "rm -rf .turbo .expo ios android node_modules",
-    "preinstall": "bun scripts/postinstall.ts"
+    "preinstall": "bun scripts/postinstall.ts",
+    "lint": "biome check --write --unsafe"
   },
   "dependencies": {
     "@zenncore/icons": "workspace:*",

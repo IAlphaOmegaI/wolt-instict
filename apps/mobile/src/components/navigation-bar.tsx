@@ -1,11 +1,11 @@
-import { Pressable, View, Text } from "react-native";
 import {
-  BuildingIcon,
-  UtencilesIcon,
-  StoreIcon,
   BagSearchIcon,
+  BuildingIcon,
+  StoreIcon,
   UserIcon,
+  UtencilesIcon,
 } from "@zenncore/icons";
+import { Pressable, Text, View } from "react-native";
 
 const routes = [
   {
@@ -31,15 +31,17 @@ const routes = [
 ];
 export const NavigationBar = () => {
   return (
-    <View className="bg-background-dimmed border-t border-accent-foreground pb-safe pt-6">
-      <View className="flex-row justify-around items-center">
+    <View className="bg-background-dimmed pt-6 pb-safe">
+      <View className="flex-row items-center justify-around">
         {routes.map((route) => (
           <Pressable
             key={route.name}
-            className="items-center justify-center gap-2 flex flex-col"
+            className="flex flex-1 flex-col items-center justify-center gap-2"
           >
-           <route.icon className="size-12"/>
-            <Text className="mt-1 text-foreground-dimmed">{route.name}</Text>
+            <route.icon className="size-12 fill-foreground-dimmed" />
+            <Text className="mt-1 text-foreground-dimmed text-sm">
+              {route.name}
+            </Text>
           </Pressable>
         ))}
       </View>

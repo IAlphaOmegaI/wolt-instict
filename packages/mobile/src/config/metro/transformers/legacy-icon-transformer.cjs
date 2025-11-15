@@ -194,7 +194,7 @@ const createTransformer =
       filename.includes("packages/shared/icons/dist/index.js");
 
     if (isZenncoreIcon) {
-      console.log(await webToNativeSVGTransformer(src));
+      // console.log(await webToNativeSVGTransformer(src));
       return transformer.transform({
         src: await webToNativeSVGTransformer(src),
         filename,

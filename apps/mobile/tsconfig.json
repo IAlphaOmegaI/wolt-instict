@@ -2,8 +2,8 @@
   "extends": ["@zenncore/mobile/ts-config", "expo/tsconfig.base"],
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/assets/*": ["./assets/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": [
