@@ -20,7 +20,6 @@ export const LoaderIcon = ({ title, ...props }: IconProps): JSX.Element => {
           strokeLinejoin="round"
         />
         <path
-          opacity=".88"
           d="M14.127 3.873L12.359 5.641"
           stroke="currentColor"
           strokeWidth="1.5"

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "friend_001",
+    "name": "Alex",
+    "avatar": "https://i.pravatar.cc/150?img=1",
+    "preferences": ["healthy", "vegetarian"],
+    "commonOrders": ["salad", "sushi"]
+  },
+  {
+    "id": "friend_002",
+    "name": "Sam",
+    "avatar": "https://i.pravatar.cc/150?img=2",
+    "preferences": ["comfort-food", "pizza"],
+    "commonOrders": ["pizza", "burger"]
+  },
+  {
+    "id": "friend_003",
+    "name": "Jordan",
+    "avatar": "https://i.pravatar.cc/150?img=3",
+    "preferences": ["high-protein", "fitness"],
+    "commonOrders": ["protein-bowl", "smoothie"]
+  },
+  {
+    "id": "friend_004",
+    "name": "Taylor",
+    "avatar": "https://i.pravatar.cc/150?img=4",
+    "preferences": ["sushi", "asian"],
+    "commonOrders": ["sushi", "noodles"]
+  },
+  {
+    "id": "friend_005",
+    "name": "Morgan",
+    "avatar": "https://i.pravatar.cc/150?img=5",
+    "preferences": ["dessert", "sweet"],
+    "commonOrders": ["cookies", "cheesecake"]
+  },
+  {
+    "id": "friend_006",
+    "name": "Casey",
+    "avatar": "https://i.pravatar.cc/150?img=6",
+    "preferences": ["mexican", "spicy"],
+    "commonOrders": ["tacos", "burritos"]
+  },
+  {
+    "id": "friend_007",
+    "name": "Riley",
+    "avatar": "https://i.pravatar.cc/150?img=7",
+    "preferences": ["bbq", "meat"],
+    "commonOrders": ["ribs", "burger"]
+  },
+  {
+    "id": "friend_008",
+    "name": "Avery",
+    "avatar": "https://i.pravatar.cc/150?img=8",
+    "preferences": ["vegan", "healthy"],
+    "commonOrders": ["smoothie", "salad"]
+  },
+  {
+    "id": "friend_009",
+    "name": "Quinn",
+    "avatar": "https://i.pravatar.cc/150?img=9",
+    "preferences": ["pizza", "italian"],
+    "commonOrders": ["pizza", "pasta"]
+  },
+  {
+    "id": "friend_010",
+    "name": "Blake",
+    "avatar": "https://i.pravatar.cc/150?img=10",
+    "preferences": ["coffee", "breakfast"],
+    "commonOrders": ["avocado-toast", "cappuccino"]
+  }
+]
